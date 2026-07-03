@@ -1,0 +1,3 @@
+-- No INSERT/UPDATE transformations required for this week's challenge
+-- All data loading is handled via INSERT statements in load_data.sql
+-- The masking policy and tagging are handled in ddl.sql

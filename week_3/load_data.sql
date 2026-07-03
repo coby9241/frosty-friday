@@ -1,0 +1,1 @@
+-- No COPY INTO statements required for this week's challenge

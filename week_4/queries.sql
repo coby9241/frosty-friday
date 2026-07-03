@@ -1,0 +1,1 @@
+SELECT data[0]:Era FROM stg_monarchs;

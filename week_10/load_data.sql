@@ -1,0 +1,2 @@
+-- No explicit data loading statements required for this week's challenge
+-- Data loading is handled within the stored procedure execution

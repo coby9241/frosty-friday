@@ -1,0 +1,1 @@
+SELECT $1, $2, $3 FROM @frosty_friday_challenge_1_stage (file_format => 'frosty_friday_challenge_1_file_format');
