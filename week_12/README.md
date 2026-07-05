@@ -1,34 +1,64 @@
-# Week 12: Frosty Friday Challenge
+# Week 12: Window Functions & NULL Handling
 
-This directory contains the setup, data loading, and querying for the twelfth Frosty Friday challenge, focusing on inventory tracking with NULL values representing out-of-stock items.
+Use **window functions with `IGNORE NULLS`** to track inventory stock levels over time, properly handling NULL values that indicate out-of-stock items.
+
+## Challenge
+
+Build a query that shows the most recent stock check date and current stock level for each product, treating NULL stock amounts as "out of stock" and carrying forward the last known non-NULL value.
+
+## Key Concepts
+
+- **`IGNORE NULLS`**: Skip NULL values in window function calculations
+- **`LAST_VALUE`**: Get the last non-NULL value in a window frame
+- **`RANK() / DENSE_RANK()`**: Identify most recent records per product
+- **NULL Semantics**: Use NULL to represent "out of stock" vs. 0 (which means "in stock, 0 units")
+
+## Data Flow
+
+```
+DDL:
+    CREATE TABLE testing_data (id AUTOINCREMENT, product, stock_amount, date_of_check)
+
+Data:
+    Each row = one stock check for one product on one date
+    NULL stock_amount → product was out of stock at that check
+    Non-NULL stock_amount → product had that many units in stock
+
+Query:
+    Partition by product
+    → Apply LAST_VALUE IGNORE NULLS
+    → Get most recent check date and non-NULL stock level per product
+```
 
 ## Files
 
-- `ddl.sql`: Contains the DDL statements to create the database, schema, and table.
-- `load_data.sql`: Contains the INSERT statements to populate the table with inventory data over time.
-- `transformations.sql`: Contains transformation statements (empty)`: No transformation statements required for this week's challenge.
-- `queries.sql`: Contains a query to analyze inventory levels and identify current stock status.
-- `README.md`: This file.
+| File | Purpose |
+|------|---------|
+| `ddl.sql` | Creates database, schema, and inventory tracking table |
+| `load_data.sql` | Inserts inventory check records over time with NULL values |
+| `transformations.sql` | Not needed — all logic is in the query |
+| `queries.sql` | Analyzes stock levels using window functions with IGNORE NULLS |
 
-## Setup
+## Setup & Execution
 
-Run the `ddl.sql` script to set up the environment:
 ```sql
--- Contents of ddl.sql
+-- 1. Create the table
+\i week_12/ddl.sql
+
+-- 2. Load inventory data (INSERT statements)
+\i week_12/load_data.sql
+
+-- 3. Run the stock analysis query
+\i week_12/queries.sql
 ```
 
-## Data Loading
+## Expected Result
 
-Run the `load_data.sql` script to load the inventory tracking data:
-```sql
--- Contents of load_data.sql
-```
+A table with one row per product showing the most recent stock check date and the current stock level, with NULL values correctly interpreted as "out of stock" rather than treated as missing data.
 
-## Query and Analysis
+## What You'll Learn
 
-Run the `queries.sql` script to analyze inventory levels:
-```sql
--- Contents of queries.sql
-```
-
-This query shows the most recent stock check date and current stock level for each product, properly handling NULL values (which indicate out-of-stock items).
+- Using `IGNORE NULLS` in window functions
+- The difference between NULL and 0 in data semantics
+- `LAST_VALUE` for carrying forward non-NULL values
+- Partitioning data for per-product analysis

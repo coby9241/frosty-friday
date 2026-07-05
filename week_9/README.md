@@ -1,38 +1,69 @@
-# Week 9: Frosty Friday Challenge
+# Week 9: Dynamic Data Masking
 
-This directory contains the setup, data loading, querying, and masking policy demonstration for the ninth Frosty Friday challenge.
+Implement **column-level security with dynamic data masking** — use tags, masking policies, and role-based clearance levels to control who sees sensitive data.
+
+## Challenge
+
+Create a table with superhero/villain data, tag each column with a PII level (PUBLIC, CONFIDENTIAL, RESTRICTED), build a masking policy that checks the user's role against the tag's classification, and verify that different roles see different data.
+
+## Key Concepts
+
+- **Dynamic Data Masking**: Hide sensitive data at query time based on policy rules
+- **Object Tags with `ALLOWED_VALUES`**: Restrict tag values to a controlled vocabulary
+- **`SYSTEM$GET_TAG_ON_CURRENT_COLUMN`**: Read the tag value on the column being queried
+- **`CURRENT_ROLE()`**: Determine who's querying to control what they see
+- **`MEMORIZABLE` Functions**: Cache function results for better performance
+
+## Data Flow
+
+```
+DDL Creates:
+    ├── Table: data_to_be_masked (first_name, last_name, hero_name)
+    ├── Tag: pii_level (ALLOWED_VALUES: PUBLIC, CONFIDENTIAL, RESTRICTED)
+    ├── Tags applied to each column
+    ├── Role Checker table (maps roles → clearance levels)
+    ├── Function: get_pii_level() (returns user's clearance)
+    └── Masking Policy: PII_MASK (compares tag level vs user's clearance)
+
+Query Time:
+    foo1 role → sees masked data for RESTRICTED columns
+    foo2 role → may see different masked values
+    ACCOUNTADMIN → sees all data unmasked
+```
 
 ## Files
 
-- `ddl.sql`: Contains the DDL statements to create the database, schema, tables, roles, tags, function, and masking policy.
-- `load_data.sql`: Contains the INSERT statements to populate the tables with sample data.
-- `transformations.sql`: Contains transformation statements (not used in this week's challenge).
-- `queries.sql`: Contains queries to demonstrate the masking policy functionality with different roles.
-- `README.md`: This file.
+| File | Purpose |
+|------|---------|
+| `ddl.sql` | Creates tables, tags, roles, the clearance function, and masking policy |
+| `load_data.sql` | Populates the data table and role checker table |
+| `transformations.sql` | Not needed for this challenge |
+| `queries.sql` | Creates & tests the clearance function, queries through different roles |
 
-## Setup
+## Setup & Execution
 
-Run the `ddl.sql` script to set up the environment:
 ```sql
--- Contents of ddl.sql
+-- 1. Create all objects (tables, tags, roles, function, masking policy)
+\i week_9/ddl.sql
+
+-- 2. Load sample data and role mappings
+\i week_9/load_data.sql
+
+-- 3. Test masking by switching roles
+\i week_9/queries.sql
 ```
 
-## Data Loading
+## Expected Result
 
-Run the `load_data.sql` script to load data from the stages:
-```sql
--- Contents of load_data.sql
-```
+Different roles see different data:
+- `SERVER_ADMIN_ROLE` (if mapped to RESTRICTED) → sees all data
+- `foo1` (if mapped to CONFIDENTIAL) → sees PUBLIC and CONFIDENTIAL, but not RESTRICTED
+- No role mapping → falls back to PUBLIC visibility
 
-## Query and Masking Demonstration
+## What You'll Learn
 
-Run the `queries.sql` script to see how the masking policy works with different roles:
-```sql
--- Contents of queries.sql
-```
-
-This demonstrates:
-1. Column-level tagging with PII levels (PUBLIC, CONFIDENTIAL, RESTRICTED)
-2. A function to determine user's clearance level based on role
-3. A masking policy that shows or hides data based on the comparison of column tag and user clearance
-4. Querying the data as different roles to see the masking in action
+- Creating masking policies with conditional logic
+- Combining tags and policies for column-level security
+- Using `ALLOWED_VALUES` on tags for governance
+- Writing `MEMORIZABLE` functions for policy lookups
+- Testing security by querying with different roles

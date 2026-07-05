@@ -1,39 +1,71 @@
-# Week 2: Frosty Friday Challenge
+# Week 2: Streams & Change Data Capture
 
-This directory contains the setup, data loading, transformation, and query for the second Frosty Friday challenge.
+Track changes to your data using Snowflake **streams** — this challenge introduces change data capture (CDC) for incremental processing.
+
+## Challenge
+
+Load employee data from a CSV in S3, stage it, then use a stream to capture and apply changes to a target table.
+
+## Key Concepts
+
+- **Streams**: Track INSERTs, UPDATEs, DELETEs on a source table
+- **Staging Tables**: Landing zone for raw data before transformation
+- **Change Data Capture (CDC)**: Process only what changed, not the full dataset
+- **`APPEND_ONLY` Streams**: For insert-only workloads
+
+## Data Flow
+
+```
+S3 (public bucket)
+    │
+    ▼
+External Stage
+    │
+    ▼
+COPY INTO → Staging Table (raw CSV)
+    │
+    ▼
+Stream on Staging Table (captures new rows)
+    │
+    ▼
+INSERT INTO → Employees Table (transformed, clean data)
+    │
+    ▼
+SELECT from Stream (view CDC records)
+```
 
 ## Files
 
-- `ddl.sql`: Contains the DDL statements to create the database, schema, stage, file format, tables, and stream.
-- `load_data.sql`: Contains the COPY INTO statement to load data from the stage into the staging table.
-- `transformations.sql`: Contains the INSERT INTO statement to transform data from the staging table to the employees table.
-- `queries.sql`: Contains the final SELECT statement to query the employees stream.
-- `README.md`: This file.
+| File | Purpose |
+|------|---------|
+| `ddl.sql` | Creates database, stage, file format, staging table, employees table, and stream |
+| `load_data.sql` | `COPY INTO` to load CSV into staging table |
+| `transformations.sql` | `INSERT INTO employees` from the staging stream |
+| `queries.sql` | `SELECT * FROM employees_stream` to inspect CDC records |
 
-## Setup
+## Setup & Execution
 
-Run the `ddl.sql` script to set up the environment:
 ```sql
--- Contents of ddl.sql
+-- 1. Create all objects (tables, stage, file format, stream)
+\i week_2/ddl.sql
+
+-- 2. Load raw data from S3 into staging table
+\i week_2/load_data.sql
+
+-- 3. Apply transformations (insert to employees via stream)
+\i week_2/transformations.sql
+
+-- 4. Query the stream to see captured changes
+\i week_2/queries.sql
 ```
 
-## Data Loading
+## Expected Result
 
-Run the `load_data.sql` script to load data from the stage:
-```sql
--- Contents of load_data.sql
-```
+The stream shows new rows with metadata columns (`METADATA$ACTION`, `METADATA$ISUPDATE`, `METADATA$ROW_ID`) that track what changed.
 
-## Transformation
+## What You'll Learn
 
-Run the `transformations.sql` script to transform the loaded data:
-```sql
--- Contents of transformations.sql
-```
-
-## Query
-
-Run the `queries.sql` script to view the final result:
-```sql
--- Contents of queries.sql
-```
+- How streams capture changes without triggers
+- The difference between source tables, staging tables, and streams
+- How to consume a stream and apply changes to a target table
+- Stream metadata columns and their purpose
