@@ -1,0 +1,14 @@
+with x as (SELECT
+    ROW_NUMBER() OVER (ORDER BY NULL) AS FIZZBUZZ
+FROM
+    TABLE(GENERATOR(ROWCOUNT => 100))
+
+)
+select
+    CASE
+        WHEN FIZZBUZZ % 3 = 0 AND FIZZBUZZ % 5 = 0 THEN 'FizzBuzz'
+        WHEN FIZZBUZZ % 3 = 0 THEN 'Fizz'
+        WHEN FIZZBUZZ % 5 = 0 THEN 'Buzz'
+        ELSE FIZZBUZZ::VARCHAR
+    END AS FIZZBUZZ
+from X
